@@ -37,7 +37,7 @@
       <div class="flex flex-col items-center gap-3 md:flex-row md:justify-between mx-auto max-w-6xl px-4 text-sm text-gray-500 tracking-wide">
         <span class="">
           <a href="https://github.com/34892002/edgeKey" target="_blank">
-            {{ footerText ? footerText : "&copy; 2026 designed" }} & developed by edgeKey 
+            {{ footerText ? footerText : "&copy; 2026 designed by HeyJobs" }}
           </a>
         </span>
         <!-- 单条直接展示，多条用 dropdown -->
