@@ -30,6 +30,10 @@
               <div class="text-sm text-base-content/70">限购 {{ product.maxBuy }} 件，</div>
               <div class="text-sm text-base-content/70">发货方式：{{ getDeliveryTypeLabel(product.deliveryType) }}</div>
           </div>
+          <div v-if="product.cardType && product.cardType !== 'NONE'" class="flex items-center gap-2">
+            <span class="badge badge-primary badge-sm">{{ getCardTypeLabel(product.cardType) }}</span>
+            <span v-if="product.durationDays" class="text-sm text-base-content/70">有效期 {{ product.durationDays }} 天</span>
+          </div>
           <div class="divider my-0"></div>
 
           <label class="flex flex-col gap-1.5">
@@ -184,6 +188,10 @@ const form = reactive({
 
 function getDeliveryTypeLabel(type: string) {
   return ({ CARD_AUTO: "自动发货", FIXED_CARD: "自动发货", MANUAL: "人工发货" } as Record<string, string>)[type] || type;
+}
+
+function getCardTypeLabel(type: string) {
+  return ({ NONE: "", MONTH: "月卡", QUARTER: "季卡", YEAR: "年卡", CUSTOM: "自定义" } as Record<string, string>)[type] || type;
 }
 
 let mobile = false;
