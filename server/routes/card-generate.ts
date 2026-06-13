@@ -2,7 +2,7 @@ import type { Hono } from "hono";
 import type { PrismaClient } from "../../generated/prisma/client";
 import { getContext } from "telefunc";
 import { badRequestError, notFoundError } from "../../lib/app-error";
-import { getAdminContext, logAdminOperation } from "../auth/service";
+import { getAdminContext, logAdminOperation } from "../../modules/auth/service";
 import { logger } from "../../lib/logger";
 
 interface CardBatchGenerateInput {
