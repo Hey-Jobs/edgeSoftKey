@@ -157,6 +157,8 @@ export async function getProductDetailBySlug(prisma: PrismaClient, slug: string)
     deliveryType: record.deliveryType as ProductDeliveryTypeValue,
     manualDeliveryHint: record.manualDeliveryHint,
     stockMode: record.stockMode as "FINITE" | "UNLIMITED",
+    cardType: record.cardType as "NONE" | "MONTH" | "QUARTER" | "YEAR" | "CUSTOM",
+    durationDays: record.durationDays,
     availableStock: getAvailableStock(record),
   };
 }
