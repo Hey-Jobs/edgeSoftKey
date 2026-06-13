@@ -121,7 +121,11 @@ CREATE TABLE "Order" (
     "closedAt" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    "discountCodeId" INTEGER,
+    "discountCodeStr" TEXT,
+    "originalAmount" INTEGER,
+    "discountAmount" INTEGER
 );
 CREATE UNIQUE INDEX "Order_orderNo_key" ON "Order"("orderNo");
 CREATE INDEX "Order_productId_idx" ON "Order"("productId");
@@ -129,10 +133,6 @@ CREATE INDEX "Order_status_createdAt_idx" ON "Order"("status", "createdAt");
 CREATE INDEX "Order_paymentStatus_createdAt_idx" ON "Order"("paymentStatus", "createdAt");
 CREATE INDEX "Order_deliveryStatus_createdAt_idx" ON "Order"("deliveryStatus", "createdAt");
 CREATE INDEX "Order_discountCodeId_idx" ON "Order"("discountCodeId");
-
--- Order 表扩展：添加折扣字段
--- 注意：SQLite 不支持 ALTER TABLE ADD COLUMN IF NOT EXISTS
--- 这些字段在 CREATE TABLE 时已包含，此处仅为兼容性占位
 
 -- OrderDelivery 订单交付记录表
 CREATE TABLE "OrderDelivery" (
