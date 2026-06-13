@@ -142,59 +142,59 @@ CREATE TABLE "PaymentLog" (
 );
 
 -- CreateTable
-CREATE TABLE "EmailConfig" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "provider" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "isEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "configJson" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
-);
+    CREATE TABLE "EmailConfig" (
+        "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "provider" TEXT NOT NULL,
+        "name" TEXT NOT NULL,
+        "isEnabled" BOOLEAN NOT NULL DEFAULT false,
+        "configJson" TEXT NOT NULL,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL
+    );
 
--- CreateTable
-CREATE TABLE "EmailTemplate" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "scene" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "isEnabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
-);
+    -- CreateTable
+    CREATE TABLE "EmailTemplate" (
+        "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "scene" TEXT NOT NULL,
+        "name" TEXT NOT NULL,
+        "subject" TEXT NOT NULL,
+        "content" TEXT NOT NULL,
+        "isEnabled" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL
+    );
 
--- CreateTable
-CREATE TABLE "EmailLog" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "orderId" INTEGER,
-    "provider" TEXT NOT NULL,
-    "apiProvider" TEXT,
-    "scene" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'SUCCESS',
-    "toEmail" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
-    "messageId" TEXT,
-    "error" TEXT,
-    "triggeredBy" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "EmailLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
+    -- CreateTable
+    CREATE TABLE "EmailLog" (
+        "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "orderId" INTEGER,
+        "provider" TEXT NOT NULL,
+        "apiProvider" TEXT,
+        "scene" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'SUCCESS',
+        "toEmail" TEXT NOT NULL,
+        "subject" TEXT NOT NULL,
+        "messageId" TEXT,
+        "error" TEXT,
+        "triggeredBy" TEXT,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "EmailLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    );
 
--- CreateTable
-CREATE TABLE "AdminOperationLog" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "adminId" INTEGER NOT NULL,
-    "action" TEXT NOT NULL,
-    "targetType" TEXT NOT NULL,
-    "targetId" TEXT,
-    "detail" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "AdminOperationLog_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
+    -- CreateTable
+    CREATE TABLE "AdminOperationLog" (
+        "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "adminId" INTEGER NOT NULL,
+        "action" TEXT NOT NULL,
+        "targetType" TEXT NOT NULL,
+        "targetId" TEXT,
+        "detail" TEXT,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "AdminOperationLog_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Admin_username_key" ON "Admin"("username");
+    CREATE UNIQUE INDEX "Admin_username_key" ON "Admin"("username");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");

@@ -100,6 +100,9 @@ export function upsertProductRecord(
     price: number;
     status: "DRAFT" | "ACTIVE" | "INACTIVE";
     deliveryType: "CARD_AUTO" | "FIXED_CARD" | "MANUAL";
+    cardType?: "NONE" | "MONTH" | "QUARTER" | "YEAR" | "CUSTOM";
+    durationDays?: number | null;
+    cardGenerateMode?: "MANUAL" | "AUTO";
     fixedDeliveryContent?: string | null;
     manualDeliveryHint?: string | null;
     stockMode: "FINITE" | "UNLIMITED";
@@ -119,6 +122,9 @@ export function upsertProductRecord(
     price: input.price,
     status: input.status,
     deliveryType: input.deliveryType,
+    cardType: input.cardType ?? "NONE",
+    durationDays: input.durationDays ?? null,
+    cardGenerateMode: input.cardGenerateMode ?? "MANUAL",
     fixedDeliveryContent: input.fixedDeliveryContent ?? null,
     manualDeliveryHint: input.manualDeliveryHint ?? null,
     stockMode: input.stockMode,
