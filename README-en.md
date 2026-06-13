@@ -1,21 +1,33 @@
 [![English](https://img.shields.io/badge/English-Click-yellow)](README-en.md)
 [![中文文档](https://img.shields.io/badge/中文文档-点击查看-orange)](README.md)
 
-# EdgeKey
+# EdgeSoftKey
 
-EdgeKey is a full-stack card key shop system built with the Vike framework, deployable directly to Cloudflare. The same codebase includes frontend pages, SSR rendering, and backend API endpoints, all running on Cloudflare Workers.
+EdgeSoftKey is a full-stack card key shop system built with the Vike framework, deployable directly to Cloudflare. The same codebase includes frontend pages, SSR rendering, and backend API endpoints, all running on Cloudflare Workers.
+
+## New Features (v1.5.0)
+
+- **Card Type Product System** — Support configurable validity periods (monthly/quarterly/yearly/custom)
+- **Card Verification API** — RESTful style with hardware binding, expiry calculation, and hardware change detection
+- **Card Unbind API** — Hardware unbinding with one-day validity extension, complete audit logging
+- **Card Batch Generation** — Manual batch generation and automatic delivery generation modes
+- **Python SDK** — Hardware info collection, SHA256 encryption, card verification, auto-verification and hardware change detection
+- **Node.js SDK** — Same features as Python SDK, native implementation with no third-party dependencies
+- **Admin Panel Enhancements** — Card type product configuration, card usage status query, generation record management
 
 ## Features
 
 - 🚀 **Truly Zero Cost** — No server or domain purchase needed. Runs on Cloudflare's global edge network. One-click deploy, instantly live. Spend money on what matters, give yourself back your time.
 - 🌍 **Zero Ops** — Built on Workers + D1. The free tier is sufficient for daily operations with no surprise bills.
 - 🛍️ **Product Management** — Supports categories, product listing/unlisting, inventory modes (limited/unlimited), and min/max purchase quantities.
-- 🔑 **Card Key Management** — Bulk import card keys, automatic delivery after payment, real-time inventory alerts.
+- 🔑 **Card Key Management** — Bulk import card keys, automatic delivery after payment, card type configuration (monthly/quarterly/yearly/custom), real-time inventory alerts.
+- 🔐 **Card Verification System** — Hardware binding, expiry management, hardware change detection, unbind with validity extension.
 - 📦 **Order Management** — Order list, manual redelivery, auto-close expired orders, and detailed payment logs.
 - 💳 **Multiple Payment Gateways** — Built-in BEpusdt (USDT) and Epay (aggregated payments), with plugin-style extensibility for more.
 - 📧 **Email Notifications** — Supports SMTP / API / Cloudflare Email, with detailed email send logs.
 - ⚙️ **Site Settings** — Flexible configuration for site name, logo, announcements, and support contact.
-- 🔐 **Admin Panel** — Secure administrator account system.
+- 🔐 **Admin Panel** — Secure administrator account system with Two-Factor Authentication (2FA).
+- 🌐 **Multi-Language SDK** — Python and Node.js versions for software activation with hardware binding.
 
 > [!TIP]
 > **About zero-cost operation:** When combined with a payment channel (USDT, self-hosted, etc.), personal SMTP, and a free image hosting service, this project can achieve **100% zero-cost** operation.
@@ -45,13 +57,13 @@ Three deployment methods are supported, ordered by recommendation:
 
 ### One-Click Deploy to Cloudflare Workers
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/34892002/edgeKey)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Hey-Jobs/edgeSoftKey)
 
 > **After clicking the button, the Cloudflare Workers deployment wizard will open:**
-> 1. Log in and authorize your Git account (GitHub/GitLab). It will automatically create a new repository under your account.
+> 1. Log in and authorize your Git account (GitHub, GitLab), it will automatically create a new repository under your account.
 > 2. For security, change the default secret (`AUTH_SECRET`) in the wizard.
 > 3. If you don't bind an existing D1 database, it will automatically create and initialize one (including admin account), no manual steps needed.
-> 4. After deployment, find a log entry like `Deployed edgekey triggers (0.38 sec) https://edgekey.youraccount.workers.dev` — that URL is your site.
+> 4. After deployment, find a log entry like "Deployed edgeSoftKey triggers (0.38 sec) https://edgekey.youraccount.workers.dev" — that URL is your site.
 > 5. `https://edgekey.youraccount.workers.dev/admin` is the admin login page. Default credentials: `admin` / `admin123456`. **Change your password immediately after first login!**
 
 **One-Click Deploy FAQ**
@@ -64,7 +76,7 @@ One-click deploy and manual deploy have conflicts in the `wrangler.jsonc` config
 
 a. First update:
 ```bash
-git remote add upstream https://github.com/34892002/edgeKey.git
+git remote add upstream https://github.com/Hey-Jobs/edgeSoftKey.git
 git fetch upstream
 git merge upstream/main --allow-unrelated-histories
 git push origin main
