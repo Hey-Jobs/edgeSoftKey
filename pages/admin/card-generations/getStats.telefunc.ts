@@ -1,4 +1,4 @@
-import { assertAdminAccess, getAdminContext } from "../../../../modules/auth/service";
+import { assertAdminAccess, getAdminContext } from "../../../modules/auth/service";
 
 export async function onGetCardGenerationStats() {
   assertAdminAccess();

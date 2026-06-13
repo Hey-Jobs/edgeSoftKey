@@ -1,6 +1,6 @@
-import { assertAdminAccess } from "../../../../modules/auth/service";
-import { getAdminContext } from "../../../../modules/auth/service";
-import type { PrismaClient } from "../../../../generated/prisma/client";
+import { assertAdminAccess } from "../../../modules/auth/service";
+import { getAdminContext } from "../../../modules/auth/service";
+import type { PrismaClient } from "../../../generated/prisma/client";
 
 export async function onGetCardGenerationRecords(params: {
   productId?: number;
