@@ -134,7 +134,7 @@ onMounted(() => {
                 <td class="text-sm">{{ card.productName }}</td>
                 <td class="font-mono text-xs">{{ card.contentPreview }}</td>
                 <td>
-                  <span class="badge :class="getStatusBadge(card.status)" size="xs">
+                  <span :class="['badge', getStatusBadge(card.status)]" size="xs">
                     {{ getStatusText(card.status) }}
                   </span>
                 </td>
@@ -167,7 +167,7 @@ onMounted(() => {
           <button
             v-for="p in Math.ceil(total / pageSize)"
             :key="p"
-            class="btn :class="p === page ? 'btn-primary' : 'btn-ghost' btn-xs"
+            :class="p === page ? 'btn btn-primary btn-xs' : 'btn btn-ghost btn-xs'"
             @click="goTo(p)"
           >
             {{ p }}
