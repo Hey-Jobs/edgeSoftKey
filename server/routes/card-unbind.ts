@@ -25,13 +25,11 @@ function getCardContext() {
  * 接收卡密信息，执行解绑操作：
  * 1. 验证卡密是否存在且为已售出状态
  * 2. 验证卡密关联的硬件绑定记录
- * 3. 从卡密总有效期中扣除一天时长（延长到期时间一天）
+ * 3. 从卡密总有效期中扣除一天时长
  * 4. 删除当前硬件绑定记录（允许重新绑定）
  * 5. 记录解绑操作日志
  *
  * 注意：此接口的"解绑"指的是解除硬件绑定，让卡密可以重新绑定新设备。
- * 扣一天是指续期一天（与"扣除一天"的字面意思相反，实际是给用户一天宽限期）。
- * 如果需求是从到期时间中减去一天，请修改 unbindDays 的计算逻辑。
  *
  * @postbody { card: string }
  * @returns { success: boolean, message: string, remainingDays?: number, code?: string }
@@ -137,10 +135,10 @@ export function registerCardUnbindRoutes(app: Hono) {
       const requestIp = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
 
       // 开启事务
-      const unbindDays = 1; // 每次解绑续期一天
+      const unbindDays = 1; // 每次解绑扣除一天
       const result = await prisma.$transaction(async (tx: PrismaClient) => {
-        // 计算新的到期时间（续期一天）
-        const newExpireAt = new Date(validity.expireAt.getTime() + unbindDays * 24 * 60 * 60 * 1000);
+        // 计算新的到期时间（扣除一天）
+        const newExpireAt = new Date(validity.expireAt.getTime() - unbindDays * 24 * 60 * 60 * 1000);
 
         // 更新有效期记录
         await tx.cardValidity.update({
@@ -183,7 +181,7 @@ export function registerCardUnbindRoutes(app: Hono) {
 
       return c.json({
         success: true,
-        message: "解绑成功，有效期已延长一天",
+        message: "解绑成功，有效期已扣除一天",
         remainingDays: result.remainingDays,
       } as CardUnbindOutput);
     } catch (error) {
