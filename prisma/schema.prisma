@@ -1,0 +1,507 @@
+generator client_cf {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  runtime  = "cloudflare"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum AdminStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum CategoryStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductDeliveryType {
+  CARD_AUTO
+  FIXED_CARD
+  MANUAL
+}
+
+enum ProductStockMode {
+  FINITE
+  UNLIMITED
+}
+
+enum ProductCardType {
+  NONE
+  MONTH
+  QUARTER
+  YEAR
+  CUSTOM
+}
+
+enum CardStatus {
+  UNUSED
+  LOCKED
+  SOLD
+  DISABLED
+}
+
+enum HardwareBindingStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum CardGenerateMode {
+  MANUAL
+  AUTO
+}
+
+enum CardGenerateStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ContactType {
+  EMAIL
+  QQ
+  TELEGRAM
+  OTHER
+}
+
+
+
+enum EmailChannel {
+  API
+  SMTP
+  CLOUDFLARE
+}
+
+enum EmailScene {
+  TEST
+  ORDER_PAID
+  DELIVERY_SUCCESS
+  DELIVERY_FAILED
+}
+
+enum EmailSendStatus {
+  SUCCESS
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  DELIVERED
+  CLOSED
+  FAILED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+}
+
+enum DeliveryStatus {
+  NOT_DELIVERED
+  DELIVERED
+  FAILED
+}
+
+enum DeliveryRecordType {
+  CARD
+  FIXED_CARD
+  MANUAL
+}
+
+enum DeliveryRecordStatus {
+  SUCCESS
+  FAILED
+}
+
+enum PaymentVerifyStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+enum DiscountType {
+  FIXED
+  PERCENT
+}
+
+model Admin {
+  id                  Int                 @id @default(autoincrement())
+  username            String              @unique
+  passwordHash        String
+  nickname            String?
+  email               String?
+  status              AdminStatus         @default(ACTIVE)
+  twoFactorEnabled    Boolean             @default(false)
+  twoFactorSecret     String?
+  twoFactorEnabledAt  DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  operationLogs       AdminOperationLog[]
+}
+
+model DiscountCode {
+  id        Int          @id @default(autoincrement())
+  code      String       @unique
+  type      DiscountType
+  value     Int
+  minAmount Int?
+  maxUses   Int?
+  usedCount Int          @default(0)
+  productIds String?
+  expiresAt DateTime?
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  orders    Order[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model SiteSetting {
+  id             Int      @id @default(1)
+  siteName       String
+  siteUrl        String?
+  siteSubtitle   String?
+  logoIcon       String?
+  logo           String?
+  notice         String?
+  supportContact String?
+  footerText     String?
+  orderNotice    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Category {
+  id          Int            @id @default(autoincrement())
+  name        String
+  slug        String         @unique
+  description String?
+  sort        Int            @default(0)
+  status      CategoryStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id                Int                 @id @default(autoincrement())
+  categoryId        Int?
+  name              String
+  slug              String              @unique
+  subtitle          String?
+  description       String?
+  coverImage        String?
+  price             Int
+  status            ProductStatus       @default(DRAFT)
+  deliveryType      ProductDeliveryType @default(CARD_AUTO)
+  fixedDeliveryContent String?
+  manualDeliveryHint String?
+  stockMode         ProductStockMode    @default(FINITE)
+  cardType          ProductCardType     @default(NONE)
+  durationDays      Int?                @default(30)
+  cardGenerateMode  CardGenerateMode    @default(MANUAL)
+  minBuy            Int                 @default(1)
+  maxBuy            Int                 @default(1)
+  sort              Int                 @default(0)
+  isVisibleStock    Boolean             @default(true)
+  isContactRequired Boolean             @default(true)
+  purchaseNote      String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  category          Category?           @relation(fields: [categoryId], references: [id])
+  cards             Card[]
+  orders            Order[]
+  cardValidities    CardValidity[]
+  hardwareBindings  HardwareBinding[]
+  generateRecords   CardBatchGenerateRecord[]
+
+  @@index([categoryId])
+  @@index([status, sort])
+}
+
+model Card {
+  id                   Int        @id @default(autoincrement())
+  productId            Int
+  content              String
+  status               CardStatus @default(UNUSED)
+  batchNo              String?
+  orderId              Int?
+  soldAt               DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  product              Product    @relation(fields: [productId], references: [id])
+  order                Order?     @relation(fields: [orderId], references: [id])
+  cardValidity         CardValidity?
+  unbindLogs           CardUnbindLog[]
+
+  @@index([productId, status])
+  @@index([orderId])
+}
+
+model Order {
+  id                  Int             @id @default(autoincrement())
+  orderNo             String          @unique
+  queryToken          String
+  productId           Int
+  productNameSnapshot String
+  unitPrice           Int
+  quantity            Int
+  amount              Int
+  contactType         ContactType     @default(EMAIL)
+  contactValue        String?
+  buyerNote           String?
+  paymentProvider     String
+  paymentChannel      String?
+  paymentOrderNo      String?
+  status              OrderStatus     @default(PENDING)
+  paymentStatus       PaymentStatus   @default(UNPAID)
+  deliveryStatus      DeliveryStatus  @default(NOT_DELIVERED)
+  discountCodeId      Int?
+  discountCodeStr     String?
+  originalAmount      Int?
+  discountAmount      Int?
+  paidAt              DateTime?
+  deliveredAt         DateTime?
+  closedAt            DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  product             Product         @relation(fields: [productId], references: [id])
+  discountCode        DiscountCode?   @relation(fields: [discountCodeId], references: [id])
+  cards               Card[]
+  deliveries          OrderDelivery[]
+  paymentLogs         PaymentLog[]
+  emailLogs           EmailLog[]
+
+  @@index([productId])
+  @@index([status, createdAt])
+  @@index([paymentStatus, createdAt])
+  @@index([deliveryStatus, createdAt])
+  @@index([discountCodeId])
+}
+
+model OrderDelivery {
+  id              Int                  @id @default(autoincrement())
+  orderId         Int
+  deliveryType    DeliveryRecordType   @default(CARD)
+  contentSnapshot String
+  status          DeliveryRecordStatus @default(SUCCESS)
+  createdAt       DateTime             @default(now())
+  order           Order                @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, createdAt])
+}
+
+model PaymentConfig {
+  id         Int             @id @default(autoincrement())
+  provider   String @unique
+  name       String
+  isEnabled  Boolean         @default(false)
+  configJson String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model PaymentLog {
+  id             Int                 @id @default(autoincrement())
+  orderId        Int?
+  provider       String
+  orderNo        String?
+  paymentOrderNo String?
+  eventType      String
+  rawPayload     String
+  verifyStatus   PaymentVerifyStatus @default(PENDING)
+  message        String?
+  createdAt      DateTime            @default(now())
+  order          Order?              @relation(fields: [orderId], references: [id])
+
+  @@index([provider, createdAt])
+  @@index([orderNo])
+  @@index([orderId])
+}
+
+model EmailConfig {
+  id         Int          @id @default(autoincrement())
+  provider   EmailChannel
+  name       String
+  isEnabled  Boolean      @default(false)
+  configJson String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([provider])
+}
+
+model EmailTemplate {
+  id          Int        @id @default(autoincrement())
+  scene       EmailScene @unique
+  name        String
+  subject     String
+  content     String
+  isEnabled   Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model EmailLog {
+  id          Int             @id @default(autoincrement())
+  orderId     Int?
+  provider    EmailChannel
+  apiProvider String?
+  scene       EmailScene
+  status      EmailSendStatus @default(SUCCESS)
+  toEmail     String
+  subject     String
+  messageId   String?
+  error       String?
+  triggeredBy String?
+  createdAt   DateTime        @default(now())
+  order       Order?          @relation(fields: [orderId], references: [id])
+
+  @@index([provider, createdAt])
+  @@index([scene, createdAt])
+  @@index([status, createdAt])
+  @@index([orderId])
+}
+
+model AdminOperationLog {
+  id         Int      @id @default(autoincrement())
+  adminId    Int
+  action     String
+  targetType String
+  targetId   String?
+  detail     String?
+  createdAt  DateTime @default(now())
+  admin      Admin    @relation(fields: [adminId], references: [id])
+
+  @@index([adminId, createdAt])
+}
+
+model S3Config {
+  id             Int      @id @default(autoincrement())
+  endpoint       String
+  accessKeyId    String
+  secretAccessKey String
+  bucketName     String
+  region         String   @default("auto")
+  publicDomain   String?
+  pathPrefix     String?
+  cacheControl   String   @default("public, max-age=31536000, immutable")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Media {
+  id           Int      @id @default(autoincrement())
+  originalName String
+  storedName   String   @unique
+  mimeType     String
+  fileSize     Int
+  fileKey      String   @unique
+  url          String
+  thumbnailUrl String?
+  path         String?
+  metadata     String?
+  uploadedBy   Int
+  uploadedAt   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([mimeType])
+  @@index([uploadedAt])
+  @@index([path])
+}
+
+/**
+ * 卡密有效期绑定记录
+ * 卡密首次激活时创建，记录到期时间
+ */
+model CardValidity {
+  id           Int      @id @default(autoincrement())
+  cardId       Int      @unique
+  productId    Int
+  expireAt     DateTime
+  boundAt      DateTime @default(now())
+  product      Product  @relation(fields: [productId], references: [id])
+  card         Card     @relation(fields: [cardId], references: [id])
+
+  @@index([productId, expireAt])
+  @@index([cardId])
+}
+
+/**
+ * 硬件绑定记录
+ * 记录卡密与硬件信息的绑定关系（一对多，支持换绑记录）
+ */
+model HardwareBinding {
+  id               Int                @id @default(autoincrement())
+  cardId           Int
+  productId        Int
+  hardwareHash     String             // 硬件信息加密后的哈希值
+  status           HardwareBindingStatus @default(ACTIVE)
+  cpuInfo          String?            // 原始CPU信息（加密存储）
+  memoryInfo       String?            // 原始内存信息（加密存储）
+  gpuInfo          String?            // 原始显卡信息（加密存储）
+  motherboardInfo  String?            // 原始主板信息（加密存储）
+  lastVerifiedAt   DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  product          Product            @relation(fields: [productId], references: [id])
+
+  @@index([cardId])
+  @@index([productId, hardwareHash])
+  @@index([status])
+}
+
+/**
+ * 卡密解绑日志
+ * 记录每次解绑操作
+ */
+model CardUnbindLog {
+  id           Int      @id @default(autoincrement())
+  cardId       Int
+  unbindDays   Int      @default(1)       // 扣除的天数
+  operatorIp   String?  // 操作IP地址
+  operatorId   Int?     // 操作者ID（管理员或用户）
+  reason       String?  // 解绑原因
+  createdAt    DateTime @default(now())
+  card         Card     @relation(fields: [cardId], references: [id])
+
+  @@index([cardId, createdAt])
+  @@index([createdAt])
+}
+
+/**
+ * 卡密批量生成记录
+ * 记录卡密的批量生成操作
+ */
+model CardBatchGenerateRecord {
+  id              Int                  @id @default(autoincrement())
+  productId       Int
+  generateMode    CardGenerateMode
+  generateBy      String               // 生成者（管理员ID或系统）
+  quantity        Int
+  status          CardGenerateStatus   @default(PENDING)
+  successCount    Int                  @default(0)
+  failCount       Int                  @default(0)
+  cardContents    String               // 生成的卡密内容（JSON数组，加密存储）
+  batchNo         String?              // 批次号
+  expireAt        DateTime?            // 记录过期时间
+  createdAt       DateTime             @default(now())
+  product         Product              @relation(fields: [productId], references: [id])
+
+  @@index([productId, createdAt])
+  @@index([batchNo])
+  @@index([status])
+}

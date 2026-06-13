@@ -1,0 +1,45 @@
+export interface ProductFormState {
+  id?: number;
+  categoryId: string;
+  name: string;
+  slug: string;
+  subtitle: string;
+  coverImage: string;
+  description: string;
+  price: number;
+  status: "DRAFT" | "ACTIVE" | "INACTIVE";
+  deliveryType: "CARD_AUTO" | "FIXED_CARD" | "MANUAL";
+  cardType: "NONE" | "MONTH" | "QUARTER" | "YEAR" | "CUSTOM";
+  durationDays: number;
+  cardGenerateMode: "MANUAL" | "AUTO";
+  fixedDeliveryContent: string;
+  manualDeliveryHint: string;
+  minBuy: number;
+  maxBuy: number;
+  sort: number;
+  purchaseNote: string;
+}
+
+export function createProductFormState(input?: Partial<ProductFormState>): ProductFormState {
+  return {
+    id: input?.id,
+    categoryId: input?.categoryId ?? "",
+    name: input?.name ?? "",
+    slug: input?.slug ?? "",
+    subtitle: input?.subtitle ?? "",
+    coverImage: input?.coverImage ?? "",
+    description: input?.description ?? "",
+    price: input?.price ?? 0,
+    status: input?.status ?? "DRAFT",
+    deliveryType: input?.deliveryType ?? "CARD_AUTO",
+    cardType: input?.cardType ?? "NONE",
+    durationDays: input?.durationDays ?? 30,
+    cardGenerateMode: input?.cardGenerateMode ?? "MANUAL",
+    fixedDeliveryContent: input?.fixedDeliveryContent ?? "",
+    manualDeliveryHint: input?.manualDeliveryHint ?? "",
+    minBuy: input?.minBuy ?? 1,
+    maxBuy: input?.maxBuy ?? 1,
+    sort: input?.sort ?? 0,
+    purchaseNote: input?.purchaseNote ?? "",
+  };
+}

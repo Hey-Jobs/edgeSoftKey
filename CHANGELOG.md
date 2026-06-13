@@ -1,0 +1,100 @@
+# Change Log
+
+## v1.4.4 (2026-06-01)
+
+### Bug Fixes
+
+- **auth:** 修复通过 CDN 反向代理访问时，后台登录重定向被跳转到源站域名的问题，Auth.js 现优先使用站点设置中配置的网站地址
+
+## v1.4.3 (2026-05-26)
+
+### Features
+
+- **security:** 新增后台双重认证，支持身份验证器 App 绑定、QuickChart 二维码、登录 TOTP 校验与遗忘 2FA 恢复说明 ([9aca5c9](https://github.com/34892002/edgeKey/commit/9aca5c9))
+
+### Bug Fixes
+
+- **auth:** 加强后台鉴权相关处理，敏感信息处理 ([c09f2fb](https://github.com/34892002/edgeKey/commit/c09f2fb))
+- **docs:** 修正文档与发布说明勘误 ([1980c7a](https://github.com/34892002/edgeKey/commit/1980c7a))
+
+## v1.4.1 (2026-05-21)
+
+### Features
+
+- **discount:** 新增商品折扣码功能，支持为商品配置折扣优惠 ([0a25d08](https://github.com/34892002/edgeKey/commit/0a25d08))
+- **email:** 邮件模版变量展示，支持在邮件内容中使用变量 ([8079e8f](https://github.com/34892002/edgeKey/commit/8079e8f))
+- **email:** 新增邮件服务商 resend，移除mailJet
+- **ui:** 后台菜单重构为集中配置管理，支持根据当前路径自动展开/高亮 ([b79bd34](https://github.com/34892002/edgeKey/commit/b79bd34))
+- **ui:** 面包屑导航优化，自动关联菜单层级 ([b79bd34](https://github.com/34892002/edgeKey/commit/b79bd34))
+- **security:** 安全设置页展示 Turnstile 配置状态，实时检测是否已启用
+
+### Bug Fixes
+
+- **media:** 修复 FilePickerModal 组件过早加载上传图片的问题 ([4d69df2](https://github.com/34892002/edgeKey/commit/4d69df2))
+- **email:** 修复发送邮件备注缺失的问题 ([8079e8f](https://github.com/34892002/edgeKey/commit/8079e8f))
+- **product:** 修复商品详情页显示问题 ([2769c6d](https://github.com/34892002/edgeKey/commit/2769c6d))
+
+## v1.3.6 (2026-05-17)
+
+### Improvements
+
+- **email:** 邮件日志列表添加分页功能 ([cd08233](https://github.com/34892002/edgeKey/commit/cd08233))
+- **order:** 优化订单列表状态显示，仅展示订单状态，隐藏支付状态和发货状态，简化界面 ([8eb2cd5](https://github.com/34892002/edgeKey/commit/8eb2cd5))
+- **order:** 完善订单筛选功能，支持按订单状态（待处理、已支付、已发货、已关闭、失败）筛选 ([8eb2cd5](https://github.com/34892002/edgeKey/commit/8eb2cd5))
+- **order:** 完善支付方式筛选器，补充 Stripe ([8eb2cd5](https://github.com/34892002/edgeKey/commit/8eb2cd5))
+
+### Bug Fixes
+
+- **payment:** 修复支付失败但订单已创建的问题 ([961e07b](https://github.com/34892002/edgeKey/commit/961e07b))
+- **database:** 修复数据库迁移问题 ([9d83b78](https://github.com/34892002/edgeKey/commit/9d83b78))
+
+## v1.3.5 (2026-05-13)
+
+### Features
+- **product:** 安全性增强，登陆添加cf验证码 ([d358944](https://github.com/34892002/edgeKey/commit/d358944))
+- **product:** 新增商品发货方式，支持自动发货卡密、固定内容自动发货和手动发货配置 ([28c8671](https://github.com/34892002/edgeKey/commit/28c8671))
+
+### Improvements
+- **product:** 支付健壮性增强 ([ca76182](https://github.com/34892002/edgeKey/commit/ca76182))
+- **product:** 优化商品列表、商品详情和首页商品卡片展示，按发货方式展示库存、发货说明和状态信息 ([ad4de3b](https://github.com/34892002/edgeKey/commit/ad4de3b))
+- **payment:** 优化商品详情页支付方式体验，易支付优先展示并补充支付宝、微信渠道图标 ([c450cc8](https://github.com/34892002/edgeKey/commit/c450cc8))
+- **order:** 优化本地订单列表状态展示和刷新状态交互体验 ([bf0bf1f](https://github.com/34892002/edgeKey/commit/bf0bf1f))
+
+### Bug Fixes
+
+- **order:** 修复本地缓存订单状态未同步的问题 ([d949e82](https://github.com/34892002/edgeKey/commit/d949e82))
+- **order:** 修复订单边界情况处理问题 ([1db9abc](https://github.com/34892002/edgeKey/commit/1db9abc))
+- **inventory:** 修复批量导入重复卡密时点击“取消”仍被去重的问题，原始输入继续进入数据库重复检测和导入流程 ([ad4de3b](https://github.com/34892002/edgeKey/commit/ad4de3b))
+
+## v1.3.3 (2026-05-11)
+
+### Bug Fixes
+
+- **media:** 修复异常导致的 CDN 不缓存，命中边缘缓存后大幅降低延迟和 S3 请求开销
+- **media:** S3 响应体先完整缓冲再返回，修复流中途断开时异常逃逸 try-catch 导致 `Worker threw exception` 的问题
+
+## v1.3.0 (2026-05-10)
+
+### Features
+
+- **image:** 上传图片时支持浏览器端 WebP 压缩，自动检测浏览器能力，用户可自由开关，压缩失败时自动降级 ([3e2e8d5](https://github.com/34892002/edgeKey/commit/3e2e8d5))
+- **file-upload:** 选择文件组件 ([74842cd](https://github.com/34892002/edgeKey/commit/74842cd))
+- **s3:** 新增s3协议文件管理，提供文件上传、删除功能 ([2c3a332](https://github.com/34892002/edgeKey/commit/2c3a332))
+
+### Bug Fixes
+
+- **lint:** 规范项目编码，消除 18 处内联 `import()` 写法，统一改为顶部 `import type` ([370b975](https://github.com/34892002/edgeKey/commit/370b975))
+
+### Documentation
+
+- **docs:** 更新说明 ([5a0f09d](https://github.com/34892002/edgeKey/commit/5a0f09d))
+
+## v1.2.2 (2026-04-30)
+
+### Features
+
+- 初始化项目基础架构
+- 后台管理系统基础框架
+- 商品管理、订单管理、卡密管理
+- S3 文件存储集成
+- 媒体库基础功能
