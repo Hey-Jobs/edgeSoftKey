@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { onQueryCards } from "./queryCards.telefunc";
+import { onImportCards } from "./importCards.telefunc";
+import { onCreateCard } from "./createCard.telefunc";
+import { getProducts } from "../products/queryProducts.telefunc";
 
 interface CardRecord {
   id: number;
@@ -36,6 +39,23 @@ const status = ref("");
 const startDate = ref("");
 const endDate = ref("");
 
+// Products for dropdown
+const products = ref<{ id: number; name: string }[]>([]);
+
+// Import modal
+const showImportModal = ref(false);
+const importProductId = ref<number | undefined>();
+const importLines = ref("");
+const importBatchNo = ref("");
+const importLoading = ref(false);
+
+// Generate modal
+const showGenerateModal = ref(false);
+const generateProductId = ref<number | undefined>();
+const generateQuantity = ref(10);
+const generateBatchNo = ref("");
+const generateLoading = ref(false);
+
 async function queryCards() {
   loading.value = true;
   try {
@@ -55,8 +75,81 @@ async function queryCards() {
   }
 }
 
+async function loadProducts() {
+  try {
+    const result = await getProducts({ page: 1, pageSize: 1000 });
+    products.value = result.items;
+  } catch (e) {
+    console.error("Failed to load products:", e);
+  }
+}
+
 function goTo(p: number) {
   page.value = p;
+}
+
+function openImportModal(productId?: number) {
+  showImportModal.value = true;
+  importProductId.value = productId;
+  importLines.value = "";
+  importBatchNo.value = "";
+}
+
+async function handleImport() {
+  if (!importProductId.value || !importLines.value.trim()) return;
+  importLoading.value = true;
+  try {
+    await onImportCards({
+      productId: importProductId.value,
+      lines: importLines.value,
+      batchNo: importBatchNo.value || undefined,
+    });
+    showImportModal.value = false;
+    importLines.value = "";
+    importBatchNo.value = "";
+    await queryCards();
+  } catch (e) {
+    alert("导入失败: " + (e as Error).message);
+  } finally {
+    importLoading.value = false;
+  }
+}
+
+function openGenerateModal(productId?: number) {
+  showGenerateModal.value = true;
+  generateProductId.value = productId;
+  generateQuantity.value = 10;
+  generateBatchNo.value = "";
+}
+
+async function handleGenerate() {
+  if (!generateProductId.value) return;
+  if (generateQuantity.value < 1 || generateQuantity.value > 10000) {
+    alert("生成数量必须在 1-10000 之间");
+    return;
+  }
+  generateLoading.value = true;
+  try {
+    const response = await fetch("/api/cards/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: generateProductId.value,
+        quantity: generateQuantity.value,
+        batchNo: generateBatchNo.value || undefined,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "生成失败");
+    showGenerateModal.value = false;
+    generateBatchNo.value = "";
+    await queryCards();
+    alert(`成功生成 ${result.successCount} 张卡密`);
+  } catch (e) {
+    alert("生成失败: " + (e as Error).message);
+  } finally {
+    generateLoading.value = false;
+  }
 }
 
 function formatCents(cents: number): string {
@@ -83,7 +176,8 @@ function getStatusText(status: string): string {
   return map[status] || status;
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadProducts();
   queryCards();
 });
 </script>
@@ -92,8 +186,73 @@ onMounted(() => {
   <section class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">卡密管理</h1>
+      <div class="flex gap-2">
+        <button class="btn btn-primary btn-sm" @click="openImportModal()">导入卡密</button>
+        <button class="btn btn-secondary btn-sm" @click="openGenerateModal()">生成卡密</button>
+      </div>
       <div class="text-sm text-base-content/60">共 {{ total }} 条记录</div>
     </div>
+
+    <!-- 导入卡密弹窗 -->
+    <dialog v-if="showImportModal" class="modal" open>
+      <div class="modal-box">
+        <h3 class="text-lg font-bold mb-4">导入卡密</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="label"><span class="label-text">选择商品</span></label>
+            <select v-model="importProductId" class="select select-bordered w-full">
+              <option :value="undefined">请选择商品</option>
+              <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="label"><span class="label-text">批次号（可选）</span></label>
+            <input v-model="importBatchNo" type="text" class="input input-bordered w-full" placeholder="如：BATCH-20260101" />
+          </div>
+          <div>
+            <label class="label"><span class="label-text">卡密内容（每行一个）</span></label>
+            <textarea v-model="importLines" class="textarea textarea-bordered w-full h-48 font-mono text-xs" placeholder="CARD-001&#10;CARD-002&#10;CARD-003"></textarea>
+          </div>
+          <div class="modal-action">
+            <button class="btn btn-ghost" @click="showImportModal = false" :disabled="importLoading">取消</button>
+            <button class="btn btn-primary" @click="handleImport" :disabled="importLoading || !importProductId || !importLines.trim()">
+              {{ importLoading ? '导入中...' : '导入' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 生成卡密弹窗 -->
+    <dialog v-if="showGenerateModal" class="modal" open>
+      <div class="modal-box">
+        <h3 class="text-lg font-bold mb-4">生成卡密</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="label"><span class="label-text">选择商品</span></label>
+            <select v-model="generateProductId" class="select select-bordered w-full">
+              <option :value="undefined">请选择商品</option>
+              <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="label"><span class="label-text">批次号（可选）</span></label>
+            <input v-model="generateBatchNo" type="text" class="input input-bordered w-full" placeholder="如：AUTO-20260101" />
+          </div>
+          <div>
+            <label class="label"><span class="label-text">生成数量</span></label>
+            <input v-model.number="generateQuantity" type="number" min="1" max="10000" class="input input-bordered w-full" />
+            <p class="text-xs text-base-content/60 mt-1">范围：1-10000</p>
+          </div>
+          <div class="modal-action">
+            <button class="btn btn-ghost" @click="showGenerateModal = false" :disabled="generateLoading">取消</button>
+            <button class="btn btn-secondary" @click="handleGenerate" :disabled="generateLoading || !generateProductId">
+              {{ generateLoading ? '生成中...' : '生成' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
 
     <!-- 筛选条件 -->
     <div class="card bg-base-100 shadow-sm">
